@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:ctl="clr-namespace:ConcoursCM.Controls" xmlns:vm="clr-namespace:ConcoursCM.ViewModels" x:Class="ConcoursCM.Views.ProfilPage" Title="Profil">
+    <Grid RowDefinitions="Auto,*">
+        <ctl:TopBar Title="Profil" BadgeCount="{Binding NbNonLus}" AvatarText="{Binding Avatar}" />
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="16,12,16,24" Spacing="12">
+                <Border Style="{StaticResource Card}">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                        <Border WidthRequest="64" HeightRequest="64" StrokeShape="RoundRectangle 99" StrokeThickness="0" BackgroundColor="{StaticResource Primary}">
+                            <Label Text="{Binding Avatar}" TextColor="White" FontAttributes="Bold" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                            <HorizontalStackLayout Spacing="8">
+                                <Label Text="{Binding Nom}" Style="{StaticResource H2}" FontSize="18" LineBreakMode="TailTruncation" MaximumWidthRequest="190" />
+                                <Border Style="{StaticResource Badge}" IsVisible="{Binding Verifie}"><Label Text="✔ Vérifié" Style="{StaticResource BadgeText}" /></Border>
+                            </HorizontalStackLayout>
+                            <Label Text="{Binding SousTitre}" Style="{StaticResource Muted}" FontSize="12" />
+                            <Label Text="{Binding RegionTexte, StringFormat='● {0}'}" Style="{StaticResource Link}" TextColor="{StaticResource Teal}" FontSize="12" IsVisible="{Binding RegionTexte, Converter={StaticResource NotEmpty}}" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <Button Text="Compléter mon niveau d'études  ›" Style="{StaticResource SoftButton}" Command="{Binding ModifierNiveauCommand}" IsVisible="{Binding EstCandidat}" />
+
+                <Border Style="{StaticResource Card}" BackgroundColor="{StaticResource WarnSoft}" IsVisible="{Binding AccreditationTexte, Converter={StaticResource NotEmpty}}">
+                    <Label Text="{Binding AccreditationTexte}" TextColor="{StaticResource WarnText}" FontSize="13" />
+                </Border>
+
+                <Border BackgroundColor="{StaticResource PrimaryDeep}" StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="16" IsVisible="{Binding EstCandidat}">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Label Text="📁" FontSize="24" VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                            <Label Text="Mes candidatures suivies" TextColor="White" FontAttributes="Bold" FontSize="15" />
+                            <Label Text="{Binding SuivisTexte}" TextColor="#93C5FD" FontSize="12" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" Text="Voir ›" TextColor="White" FontAttributes="Bold" VerticalOptions="Center" />
+                    </Grid>
+                    <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding CandidaturesCommand}" /></Border.GestureRecognizers>
+                </Border>
+
+                <Border BackgroundColor="{StaticResource PrimaryDeep}" StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="16" IsVisible="{Binding PeutPublier}">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Label Text="🚀" FontSize="24" VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                            <Label Text="Publier une annonce officielle" TextColor="White" FontAttributes="Bold" FontSize="15" />
+                            <Label Text="Concours ou bourse, vérifié sous 24h" TextColor="#93C5FD" FontSize="12" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" Text="Ouvrir ›" TextColor="White" FontAttributes="Bold" VerticalOptions="Center" />
+                    </Grid>
+                    <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding PublierCommand}" /></Border.GestureRecognizers>
+                </Border>
+
+                <Border Style="{StaticResource Card}" IsVisible="{Binding EstInstitution}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="MES ANNONCES" Style="{StaticResource Caption}" />
+                        <Label Text="Aucune annonce publiée pour le moment." Style="{StaticResource Muted}" IsVisible="{Binding AAnnonces, Converter={StaticResource Not}}" />
+                        <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Annonces}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                        <VerticalStackLayout>
+                                            <Label Text="{Binding Titre}" FontAttributes="Bold" FontSize="13" LineBreakMode="TailTruncation" />
+                                            <Label Text="{Binding Date, StringFormat='Soumis le {0}'}" Style="{StaticResource Muted}" FontSize="11" />
+                                        </VerticalStackLayout>
+                                        <Border Grid.Column="1" Style="{StaticResource Badge}" BackgroundColor="{Binding StatutBg}">
+                                            <Label Text="{Binding StatutTexte}" TextColor="{Binding StatutFg}" Style="{StaticResource BadgeText}" />
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="14">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="≡ PRÉFÉRENCES &amp; ÉCO-CONCEPTION" Style="{StaticResource Caption}" />
+                            <Border Grid.Column="1" Style="{StaticResource Badge}"><Label Text="Optimisé 2G/3G" Style="{StaticResource BadgeText}" /></Border>
+                        </Grid>
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                            <Border WidthRequest="40" HeightRequest="40" Style="{StaticResource SoftBox}" Padding="0"><Label Text="💬" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center" /></Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                <Label Text="Alertes SMS dates limites" FontAttributes="Bold" FontSize="14" />
+                                <Label Text="Rappels J-3 &amp; J-1 sans connexion" Style="{StaticResource Muted}" FontSize="12" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="2" IsToggled="{Binding SmsActif}" VerticalOptions="Center" />
+                        </Grid>
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                            <Border WidthRequest="40" HeightRequest="40" Style="{StaticResource SoftBox}" Padding="0"><Label Text="🍃" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center" /></Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                <Label Text="Mode Low Data (2G/3G)" FontAttributes="Bold" FontSize="14" />
+                                <Label Text="Compression PDF &amp; cache local" Style="{StaticResource Muted}" FontSize="12" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="2" IsToggled="{Binding LowData}" VerticalOptions="Center" />
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <VerticalStackLayout VerticalOptions="Center">
+                                <Label Text="Apparence du thème" FontAttributes="Bold" FontSize="14" />
+                                <Label Text="Clair ou sombre" Style="{StaticResource Muted}" FontSize="12" />
+                            </VerticalStackLayout>
+                            <ctl:SegmentedTabs Grid.Column="1" LeftText="☀ Clair" RightText="🌙 Sombre" SelectedIndex="{Binding ThemeIndex}" WidthRequest="190" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Button Text="📞  Modifier mon numéro de rappel" Style="{StaticResource OutlineButton}" Command="{Binding ModifierNumeroCommand}" IsVisible="{Binding EstCandidat}" />
+                <Button Text="❓  Centre d'aide &amp; Contact officiel  ↗" Style="{StaticResource SoftButton}" Command="{Binding AideCommand}" />
+                <Label Text="↪ Se déconnecter" TextColor="{StaticResource Danger}" FontAttributes="Bold" HorizontalOptions="Center" Padding="10">
+                    <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding DeconnexionCommand}" /></Label.GestureRecognizers>
+                </Label>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

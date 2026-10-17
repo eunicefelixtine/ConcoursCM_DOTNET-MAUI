@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:ctl="clr-namespace:ConcoursCM.Controls" xmlns:vm="clr-namespace:ConcoursCM.ViewModels" x:Class="ConcoursCM.Views.InstitutionRegisterPage" Title="Inscription institution">
+    <ScrollView>
+        <VerticalStackLayout Padding="20,24" Spacing="14">
+            <Border Style="{StaticResource Badge}" HorizontalOptions="Center">
+                <Label Text="✔ MINESUP • MINFOPRA • IPES" Style="{StaticResource BadgeText}" />
+            </Border>
+            <VerticalStackLayout Spacing="2">
+                <Label Text="Inscription Institution" Style="{StaticResource H1}" HorizontalOptions="Center" />
+                <Label Text="Accréditation Grandes Écoles &amp; Universités" Style="{StaticResource Muted}" HorizontalOptions="Center" />
+            </VerticalStackLayout>
+
+            <ctl:SegmentedTabs LeftText="🎓 Candidat" RightText="🏛 Institution / École" SelectedIndex="{Binding OngletIndex}" />
+
+            <ctl:FormField LabelText="Nom officiel de l'établissement" Icon="🏢" Placeholder="Ex: Univ. de Douala, ENSPY, Siantou..." Text="{Binding Etablissement}" />
+
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Tutelle ministérielle &amp; Statut" Style="{StaticResource Caption}" FontSize="12" />
+                <Border Style="{StaticResource FieldBorder}">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Label Text="🏛" FontSize="18" VerticalOptions="Center" />
+                        <Picker Grid.Column="1" ItemsSource="{Binding Tutelles}" SelectedItem="{Binding Tutelle}" />
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
+
+            <ctl:FormField LabelText="Représentant habilité (Mandataire)" Icon="🪪" Placeholder="Ex: Dr. Paul Mbarga — Directeur de la Scolarité" Text="{Binding Representant}" />
+            <ctl:FormField LabelText="Email institutionnel" Icon="✉" Placeholder="scolarite@univ.cm" KeyboardType="Email" Text="{Binding Email}" />
+            <ctl:FormField LabelText="Téléphone officiel" Icon="📞" Placeholder="+237 6xx xx xx xx" KeyboardType="Telephone" Text="{Binding Telephone}" />
+            <ctl:FormField LabelText="Mot de passe de gestion" Hint="Min. 8 carac. (lettres + chiffres)" Icon="🔒" Placeholder="••••••••••••" IsPassword="True" Text="{Binding MotDePasse}" />
+            <Label Text="{Binding ForceTexte}" TextColor="{Binding ForceColor}" FontSize="12" IsVisible="{Binding ForceVisible}" Margin="4,-8,0,0" />
+
+            <Border Style="{StaticResource SoftBox}" Padding="12">
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                        <Label Text="📤" FontSize="22" VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                            <Label Text="Arrêté de nomination ou mandat" FontAttributes="Bold" FontSize="13" />
+                            <Label Text="{Binding MandatTexte}" Style="{StaticResource Muted}" FontSize="11" />
+                        </VerticalStackLayout>
+                        <Button Grid.Column="2" Text="Parcourir" Style="{StaticResource SmallButton}" Command="{Binding ParcourirCommand}" />
+                    </Grid>
+                    <HorizontalStackLayout Spacing="4">
+                        <CheckBox IsChecked="{Binding Certifie}" VerticalOptions="Start" />
+                        <Label Text="Je certifie sur l'honneur être mandaté par l'établissement pour la publication des concours et résultats."
+                               FontSize="12" WidthRequest="280" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border IsVisible="{Binding Erreur, Converter={StaticResource NotEmpty}}" Style="{StaticResource SoftBox}" BackgroundColor="{StaticResource DangerSoft}">
+                <Label Text="{Binding Erreur}" TextColor="#B91C1C" FontSize="13" />
+            </Border>
+
+            <Button Text="Soumettre l'accréditation  →" Style="{StaticResource PrimaryButton}" Command="{Binding SoumettreCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="4">
+                <Label Text="Déjà accrédité ?" Style="{StaticResource Muted}" />
+                <Label Text="Se connecter" Style="{StaticResource Link}">
+                    <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding SeConnecterCommand}" /></Label.GestureRecognizers>
+                </Label>
+            </HorizontalStackLayout>
+            <Label Text="🕐 Vérification &amp; validation sous 24h ouvrées" Style="{StaticResource Muted}" FontSize="12" HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

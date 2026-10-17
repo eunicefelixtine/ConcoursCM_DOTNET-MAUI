@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:ctl="clr-namespace:ConcoursCM.Controls" xmlns:vm="clr-namespace:ConcoursCM.ViewModels" x:Class="ConcoursCM.Views.ConcoursListPage" Title="Concours">
+    <Grid RowDefinitions="Auto,*">
+        <ctl:TopBar Title="Concours" BadgeCount="{Binding NbNonLus}" AvatarText="{Binding Avatar}" />
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Concours}" SelectionMode="None">
+            <CollectionView.Header>
+                <VerticalStackLayout Padding="16,10,16,4" Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Spacing="0">
+                            <Label Text="{Binding SessionTexte}" Style="{StaticResource Link}" FontSize="11" />
+                            <Label Text="Concours d'Entrée Officiels" Style="{StaticResource H2}" FontSize="20" />
+                        </VerticalStackLayout>
+                        <Border Grid.Column="1" Style="{StaticResource Badge}" VerticalOptions="Center">
+                            <Label Text="{Binding NbOuverts, StringFormat='● {0} ouverts'}" Style="{StaticResource BadgeText}" />
+                        </Border>
+                    </Grid>
+                    <Border Style="{StaticResource FieldBorder}" Padding="12,0">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                            <Label Text="🔍" FontSize="18" VerticalOptions="Center" />
+                            <Entry Grid.Column="1" Placeholder="Rechercher une école, filière..." Text="{Binding Recherche}" />
+                            <Border Grid.Column="2" WidthRequest="36" HeightRequest="36" Style="{StaticResource SoftBox}" Padding="0" VerticalOptions="Center">
+                                <Label Text="⚙" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center" />
+                                <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding FiltresCommand}" /></Border.GestureRecognizers>
+                            </Border>
+                        </Grid>
+                    </Border>
+                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                        <HorizontalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Chips}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="{Binding Bg}" StrokeThickness="0" StrokeShape="RoundRectangle 99" Padding="16,9">
+                                        <Label Text="{Binding Label}" TextColor="{Binding Fg}" FontAttributes="Bold" FontSize="13" />
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer CommandParameter="{Binding .}"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ConcoursListViewModel}}, Path=ChoisirCategorieCommand}" />
+                                        </Border.GestureRecognizers>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </HorizontalStackLayout>
+                    </ScrollView>
+                </VerticalStackLayout>
+            </CollectionView.Header>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Style="{StaticResource Card}" Margin="16,6">
+                        <VerticalStackLayout Spacing="10">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                <Border WidthRequest="46" HeightRequest="46" Style="{StaticResource SoftBox}" Padding="0" VerticalOptions="Start">
+                                    <Label Text="{Binding Initiales}" Style="{StaticResource Link}" FontSize="15" HorizontalOptions="Center" VerticalOptions="Center" />
+                                </Border>
+                                <VerticalStackLayout Grid.Column="1" Spacing="4">
+                                    <FlexLayout Wrap="Wrap" AlignItems="Center">
+                                        <Label Text="{Binding Etablissement}" FontAttributes="Bold" FontSize="16" Margin="0,0,8,2" />
+                                        <Border Style="{StaticResource Badge}"><Label Text="{Binding CategorieBadge}" Style="{StaticResource BadgeText}" /></Border>
+                                    </FlexLayout>
+                                    <Label Text="{Binding Intitule}" Style="{StaticResource Muted}" />
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="2" Spacing="6" HorizontalOptions="End">
+                                    <Border Style="{StaticResource Badge}" BackgroundColor="{Binding StatutBg}" HorizontalOptions="End">
+                                        <Label Text="{Binding StatutTexte}" TextColor="{Binding StatutFg}" Style="{StaticResource BadgeText}" />
+                                    </Border>
+                                    <Label Text="{Binding FavoriGlyph}" FontSize="24" HorizontalOptions="End" TextColor="#F59E0B">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer CommandParameter="{Binding .}"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ConcoursListViewModel}}, Path=BasculerFavoriCommand}" />
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                </VerticalStackLayout>
+                            </Grid>
+
+                            <Border Style="{StaticResource SoftBox}">
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="📅 CLÔTURE" Style="{StaticResource Caption}" FontSize="10" />
+                                        <Label Text="{Binding ClotureTexte}" FontAttributes="Bold" TextColor="{StaticResource Danger}" IsVisible="{Binding ClotureUrgente}" />
+                                        <Label Text="{Binding ClotureTexte}" FontAttributes="Bold" IsVisible="{Binding ClotureNormale}" />
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                        <Label Text="💵 QUITTANCE" Style="{StaticResource Caption}" FontSize="10" />
+                                        <Label Text="{Binding Quittance}" FontAttributes="Bold" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                            <Label Text="{Binding EligibiliteTexte}" TextColor="{Binding EligibiliteColor}" FontSize="12" FontAttributes="Bold" IsVisible="{Binding EligibiliteVisible}" />
+
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                    <Label Text="{Binding SourceTexte, StringFormat='🛡 {0}'}" Style="{StaticResource Muted}" FontSize="12" />
+                                    <Label Text="{Binding PlacesTexte, StringFormat='👥 {0}'}" Style="{StaticResource Muted}" FontSize="12" />
+                                </VerticalStackLayout>
+                                <Button Grid.Column="1" Text="Voir détails  ›" Style="{StaticResource SmallButton}" CommandParameter="{Binding .}"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ConcoursListViewModel}}, Path=OuvrirCommand}" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <CollectionView.EmptyView>
+                <Label Text="Aucun concours ne correspond à votre recherche." Style="{StaticResource Muted}" HorizontalOptions="Center" Margin="20,40" HorizontalTextAlignment="Center" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.Footer>
+                <Border Style="{StaticResource SoftBox}" Margin="16,8,16,20" Padding="12">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                        <Label Text="🔔" FontSize="22" VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                            <Label Text="Alerte SMS &amp; Rappel de Dépôt" FontAttributes="Bold" FontSize="13" />
+                            <Label Text="Activez les notifications pour ne manquer aucun arrêté." Style="{StaticResource Muted}" FontSize="12" />
+                        </VerticalStackLayout>
+                        <Button Grid.Column="2" Text="Activer" Style="{StaticResource SmallButton}" Command="{Binding ActiverRappelsCommand}" VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+            </CollectionView.Footer>
+        </CollectionView>
+    </Grid>
+</ContentPage>

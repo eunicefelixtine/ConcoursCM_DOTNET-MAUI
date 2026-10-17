@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:ctl="clr-namespace:ConcoursCM.Controls" xmlns:vm="clr-namespace:ConcoursCM.ViewModels" x:Class="ConcoursCM.Views.ConcoursDetailPage" Title="Détail concours">
+    <Grid RowDefinitions="Auto,*">
+        <ctl:TopBar Title="Détail Concours" ShowBack="True" ShowBell="False" AvatarText="{Binding Avatar}" />
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="16,12,16,24" Spacing="12">
+                <Border Style="{StaticResource Card}">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Border WidthRequest="56" HeightRequest="56" StrokeShape="RoundRectangle 14" StrokeThickness="0" BackgroundColor="{StaticResource Primary}" VerticalOptions="Center">
+                            <Label Text="🎓" FontSize="28" HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="4">
+                            <HorizontalStackLayout Spacing="6">
+                                <Border Style="{StaticResource Badge}"><Label Text="{Binding Tutelle}" Style="{StaticResource BadgeText}" /></Border>
+                                <Border Style="{StaticResource Badge}" BackgroundColor="{Binding JoursBg}"><Label Text="{Binding JoursBadge}" TextColor="{Binding JoursFg}" Style="{StaticResource BadgeText}" /></Border>
+                            </HorizontalStackLayout>
+                            <Label Text="{Binding Titre}" Style="{StaticResource H2}" FontSize="20" />
+                            <Label Text="{Binding SousTitre}" Style="{StaticResource Muted}" FontSize="12" />
+                        </VerticalStackLayout>
+                        <Border Grid.Column="2" WidthRequest="42" HeightRequest="42" Style="{StaticResource SoftBox}" Padding="0" StrokeShape="RoundRectangle 99" VerticalOptions="Start">
+                            <Label Text="{Binding FavoriGlyph}" FontSize="22" TextColor="#F59E0B" HorizontalOptions="Center" VerticalOptions="Center" />
+                            <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding BasculerFavoriCommand}" /></Border.GestureRecognizers>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+                    <Border Style="{StaticResource Card}" Padding="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="📅 Date limite" Style="{StaticResource Muted}" FontSize="11" />
+                            <Label Text="{Binding DateLimite}" FontAttributes="Bold" FontSize="14" TextColor="{StaticResource Danger}" IsVisible="{Binding DateUrgente}" />
+                            <Label Text="{Binding DateLimite}" FontAttributes="Bold" FontSize="14" IsVisible="{Binding DateUrgente, Converter={StaticResource Not}}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="1" Style="{StaticResource Card}" Padding="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="✏ Épreuves écrites" Style="{StaticResource Muted}" FontSize="11" />
+                            <Label Text="{Binding Epreuves}" FontAttributes="Bold" FontSize="14" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Row="1" Style="{StaticResource Card}" Padding="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="👥 Places ouvertes" Style="{StaticResource Muted}" FontSize="11" />
+                            <Label Text="{Binding Places}" FontAttributes="Bold" FontSize="14" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}" Padding="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="💵 Quittance" Style="{StaticResource Muted}" FontSize="11" />
+                            <Label Text="{Binding Quittance}" FontAttributes="Bold" FontSize="14" TextColor="{StaticResource Primary}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <Border Style="{StaticResource Card}" Padding="12">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                        <Border WidthRequest="40" HeightRequest="40" Style="{StaticResource SoftBox}" BackgroundColor="{StaticResource DangerSoft}" Padding="0">
+                            <Label Text="PDF" FontSize="11" FontAttributes="Bold" TextColor="#B91C1C" HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                            <Label Text="{Binding ArreteNom}" FontAttributes="Bold" FontSize="13" LineBreakMode="TailTruncation" />
+                            <Label Text="{Binding ArreteInfo}" Style="{StaticResource Muted}" FontSize="11" />
+                        </VerticalStackLayout>
+                        <Button Grid.Column="2" Text="⬇ Ouvrir" Style="{StaticResource SoftButton}" HeightRequest="36" Padding="12,0" FontSize="12" Command="{Binding OuvrirArreteCommand}" VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="{Binding PiecesTitre, StringFormat='🗄 {0}'}" Style="{StaticResource H2}" FontSize="16" />
+                            <Label Grid.Column="1" Text="Obligatoire" Style="{StaticResource Link}" TextColor="{StaticResource Teal}" FontSize="11" VerticalOptions="Center" />
+                        </Grid>
+                        <VerticalStackLayout Spacing="6" BindableLayout.ItemsSource="{Binding Pieces}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Label Text="✔" TextColor="{StaticResource Primary}" FontAttributes="Bold" />
+                                        <Label Text="{Binding .}" FontSize="13" />
+                                    </HorizontalStackLayout>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Label Text="{Binding EligibiliteTexte}" TextColor="{Binding EligibiliteColor}" FontSize="13" FontAttributes="Bold" IsVisible="{Binding EligibiliteVisible}" />
+
+                <Border Style="{StaticResource Card}" BackgroundColor="{StaticResource WarnSoft}" Padding="12">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Label Text="⚠" FontSize="20" TextColor="#D97706" VerticalOptions="Start" />
+                        <Label Grid.Column="1" FontSize="12" TextColor="{StaticResource WarnText}">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="Rappel officiel : " FontAttributes="Bold" />
+                                    <Span Text="{Binding RappelOfficiel}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </Grid>
+                </Border>
+
+                <Button Text="Postuler sur le portail officiel de l'école  ↗" Style="{StaticResource PrimaryButton}" Command="{Binding PostulerCommand}" IsEnabled="{Binding EstOuvert}" />
+                <Button Text="{Binding ChecklistTexte, StringFormat='☑  {0}'}" Style="{StaticResource SoftButton}" Command="{Binding AllerChecklistCommand}" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

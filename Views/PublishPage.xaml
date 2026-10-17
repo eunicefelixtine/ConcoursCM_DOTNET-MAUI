@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:ctl="clr-namespace:ConcoursCM.Controls" xmlns:vm="clr-namespace:ConcoursCM.ViewModels" x:Class="ConcoursCM.Views.PublishPage" Title="Publier une annonce">
+    <Grid RowDefinitions="Auto,*">
+        <ctl:TopBar Title="Publier une annonce" ShowBack="True" ShowBell="False" AvatarText="{Binding Avatar}" />
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="16,12,16,24" Spacing="12">
+                <Border Style="{StaticResource SoftBox}" Padding="12">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                        <Border WidthRequest="38" HeightRequest="38" StrokeShape="RoundRectangle 10" StrokeThickness="0" BackgroundColor="{StaticResource PrimaryDeep}">
+                            <Label Text="🛡" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1">
+                            <Label Text="PORTAIL ÉTABLISSEMENT" Style="{StaticResource Link}" FontSize="11" TextColor="{StaticResource Teal}" />
+                            <Label Text="Avis officiel &amp; Communiqués" FontAttributes="Bold" FontSize="14" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}" BackgroundColor="{StaticResource WarnSoft}" IsVisible="{Binding Bandeau, Converter={StaticResource NotEmpty}}">
+                    <Label Text="{Binding Bandeau}" TextColor="{StaticResource WarnText}" FontSize="13" />
+                </Border>
+
+                <VerticalStackLayout Spacing="12" IsEnabled="{Binding PeutPublier}">
+                    <ctl:SegmentedTabs LeftText="🎓 Concours d'Entrée" RightText="🏅 Bourse d'Étude" SelectedIndex="{Binding OngletIndex}" />
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="ÉTABLISSEMENT" Style="{StaticResource Caption}" />
+                            <Border Style="{StaticResource FieldBorder}"><Label Text="{Binding Etablissement}" VerticalOptions="Center" FontSize="13" LineBreakMode="TailTruncation" /></Border>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1" Spacing="6">
+                            <Label Text="TUTELLE MINISTÉRIELLE" Style="{StaticResource Caption}" />
+                            <Border Style="{StaticResource FieldBorder}"><Label Text="{Binding Tutelle}" VerticalOptions="Center" FontSize="13" /></Border>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <ctl:FormField LabelText="INTITULÉ OFFICIEL DU CONCOURS / BOURSE" Placeholder="Ex: 1ère Année Cycle Ingénieur de Conception" Text="{Binding Intitule}" />
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="DATE LIMITE DÉPÔT" Style="{StaticResource Caption}" />
+                            <Border Style="{StaticResource FieldBorder}"><DatePicker Date="{Binding DateCloture}" MinimumDate="{Binding DateMin}" Format="dd/MM/yyyy" /></Border>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1" Spacing="6" IsVisible="{Binding EstConcours}">
+                            <Label Text="DATE DES ÉPREUVES" Style="{StaticResource Caption}" />
+                            <Border Style="{StaticResource FieldBorder}"><DatePicker Date="{Binding DateEpreuves}" MinimumDate="{Binding DateMin}" Format="dd/MM/yyyy" /></Border>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" IsVisible="{Binding EstConcours}">
+                        <ctl:FormField LabelText="PLACES DISPONIBLES" Placeholder="Ex: 250" KeyboardType="Numeric" Text="{Binding Places}" />
+                        <ctl:FormField Grid.Column="1" LabelText="FRAIS QUITTANCE (FCFA)" Placeholder="Ex: 20 000" KeyboardType="Numeric" Text="{Binding Frais}" />
+                    </Grid>
+
+                    <VerticalStackLayout Spacing="12" IsVisible="{Binding EstBourse}">
+                        <ctl:FormField LabelText="AVANTAGES DE LA BOURSE" Placeholder="Ex: Scolarité + billet d'avion" Text="{Binding Avantages}" />
+                        <ctl:FormField LabelText="NIVEAU CIBLE" Placeholder="Ex: Master &amp; Doctorat" Text="{Binding NiveauCible}" />
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="PORTÉE" Style="{StaticResource Caption}" />
+                            <Border Style="{StaticResource FieldBorder}"><Picker ItemsSource="{Binding Portees}" SelectedItem="{Binding Portee}" /></Border>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+
+                    <ctl:FormField LabelText="LIEN EXTERNE CANDIDATURE (PORTAIL ÉCOLE)" Icon="🔗" Placeholder="https://concours.ensp-yaounde.cm/register" KeyboardType="Url" Text="{Binding Lien}" />
+                    <ctl:FormField LabelText="RÉFÉRENCE DE L'ARRÊTÉ (OPTIONNEL)" Placeholder="Ex: Arrêté N°24/0115/MINESUP" Text="{Binding Reference}" IsVisible="{Binding EstConcours}" />
+
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="ARRÊTÉ OFFICIEL SIGNÉ (PDF MAX 8 MO)" Style="{StaticResource Caption}" />
+                        <Border Style="{StaticResource SoftBox}" Padding="10">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                <Border WidthRequest="38" HeightRequest="38" Style="{StaticResource SoftBox}" BackgroundColor="{StaticResource DangerSoft}" Padding="0" StrokeShape="RoundRectangle 99">
+                                    <Label Text="PDF" FontSize="10" FontAttributes="Bold" TextColor="#B91C1C" HorizontalOptions="Center" VerticalOptions="Center" />
+                                </Border>
+                                <Label Grid.Column="1" Text="{Binding ArreteTexte}" FontSize="13" VerticalOptions="Center" LineBreakMode="MiddleTruncation" />
+                                <Button Grid.Column="2" Text="Parcourir" Style="{StaticResource SmallButton}" HeightRequest="32" Command="{Binding ParcourirCommand}" />
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <Border Style="{StaticResource SoftBox}" Padding="12">
+                        <Label FontSize="12">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="🛡 Vérification sous 24h par les administrateurs " />
+                                    <Span Text="ConcoursCM" FontAttributes="Bold" />
+                                    <Span Text=" avant indexation publique." />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </Border>
+
+                    <Border IsVisible="{Binding Erreur, Converter={StaticResource NotEmpty}}" Style="{StaticResource SoftBox}" BackgroundColor="{StaticResource DangerSoft}">
+                        <Label Text="{Binding Erreur}" TextColor="#B91C1C" FontSize="13" />
+                    </Border>
+
+                    <Button Text="🚀  Publier l'annonce officielle" Style="{StaticResource PrimaryButton}" BackgroundColor="{StaticResource PrimaryDeep}"
+                            Command="{Binding PublierCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:ctl="clr-namespace:ConcoursCM.Controls" xmlns:vm="clr-namespace:ConcoursCM.ViewModels" x:Class="ConcoursCM.Views.LoginPage" Title="Connexion">
+    <ScrollView>
+        <VerticalStackLayout Padding="22,30" Spacing="14">
+            <Border Style="{StaticResource Badge}" HorizontalOptions="Center">
+                <Label Text="● MINESUP • MINFOPRA" Style="{StaticResource BadgeText}" />
+            </Border>
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
+                <Border WidthRequest="46" HeightRequest="46" StrokeShape="RoundRectangle 14" StrokeThickness="0" BackgroundColor="{StaticResource Primary}">
+                    <Label Text="🎓" FontSize="24" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+                <VerticalStackLayout Spacing="0" VerticalOptions="Center">
+                    <Label FontSize="22" FontAttributes="Bold">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="Concours" />
+                                <Span Text="CM" TextColor="{StaticResource Accent}" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label Text="PORTAIL OFFICIEL" Style="{StaticResource Caption}" FontSize="9" />
+                </VerticalStackLayout>
+            </HorizontalStackLayout>
+
+            <Label Text="Connexion" Style="{StaticResource H1}" HorizontalOptions="Center" Margin="0,6,0,0" />
+            <Label Text="Accédez aux avis officiels &amp; alertes" Style="{StaticResource Muted}" HorizontalOptions="Center" />
+
+            <ctl:SegmentedTabs LeftText="👤 Candidat" RightText="🏛 École / Inst." SelectedIndex="{Binding OngletIndex}" />
+
+            <ctl:FormField LabelText="Identifiant" Hint="Format CM +237" Icon="🪪" Placeholder="6xx xxx xxx ou nom@domaine.cm"
+                           KeyboardType="Email" Text="{Binding Identifiant}" />
+            <ctl:FormField LabelText="Mot de passe" Icon="🔒" Placeholder="••••••••" IsPassword="True" Text="{Binding MotDePasse}" />
+            <Label Text="Mot de passe oublié ?" Style="{StaticResource Link}" HorizontalOptions="End">
+                <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding OublieCommand}" /></Label.GestureRecognizers>
+            </Label>
+
+            <Border IsVisible="{Binding Erreur, Converter={StaticResource NotEmpty}}" Style="{StaticResource SoftBox}" BackgroundColor="{StaticResource DangerSoft}">
+                <Label Text="{Binding Erreur}" TextColor="#B91C1C" FontSize="13" />
+            </Border>
+
+            <Button Text="Se connecter  →" Style="{StaticResource PrimaryButton}" Command="{Binding ConnexionCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HeightRequest="24" />
+
+            <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="10" Margin="0,4">
+                <BoxView HeightRequest="1" Color="{StaticResource StrokeLight}" VerticalOptions="Center" />
+                <Label Grid.Column="1" Text="OU CONTINUER AVEC" Style="{StaticResource Caption}" FontSize="10" />
+                <BoxView Grid.Column="2" HeightRequest="1" Color="{StaticResource StrokeLight}" VerticalOptions="Center" />
+            </Grid>
+            <Button Text="G   Continuer avec Google" Style="{StaticResource OutlineButton}" Command="{Binding GoogleCommand}" />
+
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="4" Margin="0,8,0,0">
+                <Label Text="Pas encore de compte ?" Style="{StaticResource Muted}" />
+                <Label Text="S'inscrire" Style="{StaticResource Link}">
+                    <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding InscriptionCommand}" /></Label.GestureRecognizers>
+                </Label>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

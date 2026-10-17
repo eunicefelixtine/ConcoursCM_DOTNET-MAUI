@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:ctl="clr-namespace:ConcoursCM.Controls" xmlns:vm="clr-namespace:ConcoursCM.ViewModels" x:Class="ConcoursCM.Views.HomePage" Title="Accueil">
+    <Grid RowDefinitions="Auto,*">
+        <ctl:TopBar Title="Accueil" BadgeCount="{Binding NbNonLus}" AvatarText="{Binding Avatar}" />
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="16,12" Spacing="16">
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="{Binding Salutation}" Style="{StaticResource H2}" FontSize="19" />
+                        <Label Text="Préparez vos candidatures d'élite" Style="{StaticResource Muted}" FontSize="12" />
+                    </VerticalStackLayout>
+                    <Border Grid.Column="1" Style="{StaticResource Badge}" VerticalOptions="Start">
+                        <Label Text="{Binding SessionTexte, StringFormat='● {0}'}" Style="{StaticResource BadgeText}" />
+                    </Border>
+                </Grid>
+
+                <Border Style="{StaticResource SoftBox}" Padding="12,2">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                        <Label Text="🔍" FontSize="18" VerticalOptions="Center" />
+                        <Entry Grid.Column="1" Placeholder="Rechercher un concours, une bourse..." Text="{Binding Recherche}"
+                               ReturnType="Search" ReturnCommand="{Binding RechercherCommand}" />
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}" BackgroundColor="{StaticResource WarnSoft}" IsVisible="{Binding StatutInstitution, Converter={StaticResource NotEmpty}}">
+                    <Label Text="{Binding StatutInstitution}" TextColor="{StaticResource WarnText}" FontSize="13" />
+                </Border>
+                <Button Text="🚀  Publier une annonce officielle" Style="{StaticResource PrimaryButton}" Command="{Binding PublierCommand}" IsVisible="{Binding EstInstitution}" />
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <Border Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="6">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <Border WidthRequest="40" HeightRequest="40" Style="{StaticResource SoftBox}" Padding="0"><Label Text="🎓" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center" /></Border>
+                                <Border Grid.Column="1" Style="{StaticResource Badge}" HorizontalOptions="End"><Label Text="{Binding NouveauxTexte}" Style="{StaticResource BadgeText}" /></Border>
+                            </Grid>
+                            <HorizontalStackLayout Spacing="6">
+                                <Label Text="{Binding NbOuverts}" FontSize="26" FontAttributes="Bold" />
+                                <Label Text="Ouverts" Style="{StaticResource Link}" VerticalOptions="End" Margin="0,0,0,5" />
+                            </HorizontalStackLayout>
+                            <Label Text="Concours nationaux" FontSize="13" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                        <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding AllerConcoursCommand}" /></Border.GestureRecognizers>
+                    </Border>
+                    <Border Grid.Column="1" Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="6">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <Border WidthRequest="40" HeightRequest="40" Style="{StaticResource SoftBox}" Padding="0" BackgroundColor="#CFFAFE"><Label Text="🏅" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center" /></Border>
+                                <Border Grid.Column="1" Style="{StaticResource Badge}" HorizontalOptions="End" BackgroundColor="#CFFAFE"><Label Text="Actives" Style="{StaticResource BadgeText}" TextColor="{StaticResource Teal}" /></Border>
+                            </Grid>
+                            <HorizontalStackLayout Spacing="6">
+                                <Label Text="{Binding NbBourses, StringFormat='{0:00}'}" FontSize="26" FontAttributes="Bold" />
+                                <Label Text="Offres" TextColor="{StaticResource Teal}" FontAttributes="Bold" VerticalOptions="End" Margin="0,0,0,5" />
+                            </HorizontalStackLayout>
+                            <Label Text="Bourses d'études" FontSize="13" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                        <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding AllerBoursesCommand}" /></Border.GestureRecognizers>
+                    </Border>
+                </Grid>
+
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Text="🔥 À la Une (Urgents)" Style="{StaticResource H2}" FontSize="16" />
+                    <Label Grid.Column="1" Text="Voir tout" Style="{StaticResource Link}">
+                        <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding AllerConcoursCommand}" /></Label.GestureRecognizers>
+                    </Label>
+                </Grid>
+
+                <VerticalStackLayout Spacing="10" BindableLayout.ItemsSource="{Binding Unes}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource Card}" Padding="12">
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <Border WidthRequest="52" HeightRequest="52" Style="{StaticResource SoftBox}" Padding="0" VerticalOptions="Center">
+                                        <Label Text="{Binding Initiales}" Style="{StaticResource Link}" FontSize="16" HorizontalOptions="Center" VerticalOptions="Center" />
+                                    </Border>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <Label Text="{Binding Titre}" FontAttributes="Bold" FontSize="16" LineBreakMode="TailTruncation" />
+                                            <Border Grid.Column="1" Style="{StaticResource Badge}" BackgroundColor="{Binding BadgeBg}" Padding="8,2">
+                                                <Label Text="{Binding Badge}" TextColor="{Binding BadgeFg}" Style="{StaticResource BadgeText}" />
+                                            </Border>
+                                        </Grid>
+                                        <Label Text="{Binding SousTitre}" Style="{StaticResource Muted}" FontSize="12" LineBreakMode="TailTruncation" />
+                                        <HorizontalStackLayout Spacing="12">
+                                            <Label Text="{Binding Info1}" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Danger}" />
+                                            <Label Text="{Binding Info2}" FontSize="12" Style="{StaticResource Muted}" />
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+                                    <Border Grid.Column="2" WidthRequest="34" HeightRequest="34" Style="{StaticResource SoftBox}" Padding="0" StrokeShape="RoundRectangle 99" VerticalOptions="Center">
+                                        <Label Text="›" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" Style="{StaticResource Link}" />
+                                    </Border>
+                                </Grid>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer CommandParameter="{Binding .}"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:HomeViewModel}}, Path=OuvrirUneCommand}" />
+                                </Border.GestureRecognizers>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+                <Label Text="Aucune échéance proche pour le moment." Style="{StaticResource Muted}" HorizontalOptions="Center" IsVisible="{Binding AucuneUne}" />
+
+                <Border Style="{StaticResource SoftBox}" Padding="14">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Label Text="🛡" FontSize="20" VerticalOptions="Start" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                            <Label Text="Vigilance concours &amp; paiements officiels" FontAttributes="Bold" FontSize="13" />
+                            <Label Text="Inscriptions &amp; frais uniquement sur les portails ministériels officiels. Aucun intermédiaire agréé." FontSize="12" Style="{StaticResource Muted}" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

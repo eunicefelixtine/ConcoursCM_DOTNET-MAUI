@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:ctl="clr-namespace:ConcoursCM.Controls" xmlns:vm="clr-namespace:ConcoursCM.ViewModels" x:Class="ConcoursCM.Views.RegisterPage" Title="Inscription">
+    <ScrollView>
+        <VerticalStackLayout Padding="20,24" Spacing="14">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                <Border WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="{StaticResource Primary}" VerticalOptions="Start">
+                    <Label Text="🎓" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                    <Label Text="Créer un compte" Style="{StaticResource H1}" FontSize="22" />
+                    <Label Text="Concours et bourses officielles au Cameroun" Style="{StaticResource Muted}" FontSize="12" />
+                </VerticalStackLayout>
+                <Border Grid.Column="2" Style="{StaticResource Badge}" VerticalOptions="Start">
+                    <Label Text="{Binding SessionTexte}" Style="{StaticResource BadgeText}" />
+                </Border>
+            </Grid>
+
+            <ctl:SegmentedTabs LeftText="👤 Candidat" RightText="🏛 Institution / École" SelectedIndex="{Binding OngletIndex}" />
+
+            <ctl:FormField LabelText="Nom complet" Icon="🪪" Placeholder="ex. Paul Biya" Text="{Binding Nom}" />
+            <ctl:FormField LabelText="Email ou Téléphone (Orange / MTN)" Icon="✉" Placeholder="contact@domaine.cm ou 6XX XX XX XX"
+                           KeyboardType="Email" Text="{Binding Identifiant}" />
+
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Région de résidence / Siège" Style="{StaticResource Caption}" FontSize="12" />
+                <Border Style="{StaticResource FieldBorder}">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Label Text="📍" FontSize="18" VerticalOptions="Center" />
+                        <Picker Grid.Column="1" Title="Sélectionner votre région" ItemsSource="{Binding Regions}" SelectedItem="{Binding Region}" />
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
+
+            <ctl:FormField LabelText="Mot de passe" Hint="Min. 6 carac." Icon="🔒" Placeholder="••••••••" IsPassword="True" Text="{Binding MotDePasse}" />
+            <Label Text="{Binding ForceTexte}" TextColor="{Binding ForceColor}" FontSize="12" IsVisible="{Binding ForceVisible}" Margin="4,-8,0,0" />
+
+            <HorizontalStackLayout Spacing="4">
+                <CheckBox IsChecked="{Binding Conditions}" VerticalOptions="Center" />
+                <Label Text="J'accepte les" VerticalOptions="Center" Style="{StaticResource Muted}" />
+                <Label Text="conditions d'utilisation" Style="{StaticResource Link}" VerticalOptions="Center" TextDecorations="Underline">
+                    <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding ConditionsCommand}" /></Label.GestureRecognizers>
+                </Label>
+            </HorizontalStackLayout>
+
+            <Border IsVisible="{Binding Erreur, Converter={StaticResource NotEmpty}}" Style="{StaticResource SoftBox}" BackgroundColor="{StaticResource DangerSoft}">
+                <Label Text="{Binding Erreur}" TextColor="#B91C1C" FontSize="13" />
+            </Border>
+
+            <Button Text="Créer mon compte  →" Style="{StaticResource PrimaryButton}" Command="{Binding CreerCompteCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
+
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="4">
+                <Label Text="Déjà inscrit ?" Style="{StaticResource Muted}" />
+                <Label Text="Se connecter" Style="{StaticResource Link}">
+                    <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding SeConnecterCommand}" /></Label.GestureRecognizers>
+                </Label>
+            </HorizontalStackLayout>
+
+            <Border Style="{StaticResource SoftBox}" Padding="12">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <Label Text="🛡" FontSize="20" VerticalOptions="Center" />
+                    <Label Grid.Column="1" Text="Vous représentez un établissement ?" VerticalOptions="Center" FontSize="13" />
+                    <Label Grid.Column="2" Text="CHANGER" Style="{StaticResource Link}" VerticalOptions="Center" FontSize="12" />
+                </Grid>
+                <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding ChangerCommand}" /></Border.GestureRecognizers>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

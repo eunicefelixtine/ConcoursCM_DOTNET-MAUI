@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:ctl="clr-namespace:ConcoursCM.Controls" xmlns:vm="clr-namespace:ConcoursCM.ViewModels" x:Class="ConcoursCM.Views.CandidaturesPage" Title="Candidatures">
+    <Grid RowDefinitions="Auto,*">
+        <ctl:TopBar Title="Mes candidatures" ShowBack="True" ShowBell="False" AvatarText="{Binding Avatar}" />
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="16,12,16,24" Spacing="10">
+                <Label Text="Touchez un dossier pour ouvrir sa checklist ou le retirer du suivi." Style="{StaticResource Muted}" FontSize="12" />
+                <VerticalStackLayout Spacing="10" BindableLayout.ItemsSource="{Binding Suivis}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource Card}">
+                                <VerticalStackLayout Spacing="8">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <VerticalStackLayout>
+                                            <Label Text="{Binding Titre}" FontAttributes="Bold" FontSize="16" />
+                                            <Label Text="{Binding SousTitre}" Style="{StaticResource Muted}" FontSize="12" />
+                                        </VerticalStackLayout>
+                                        <Border Grid.Column="1" Style="{StaticResource Badge}" BackgroundColor="{Binding BadgeBg}" VerticalOptions="Start">
+                                            <Label Text="{Binding Badge}" TextColor="{Binding BadgeFg}" Style="{StaticResource BadgeText}" />
+                                        </Border>
+                                    </Grid>
+                                    <ProgressBar Progress="{Binding Progress}" HeightRequest="8" />
+                                    <Label Text="{Binding Avancement}" Style="{StaticResource Link}" FontSize="12" />
+                                </VerticalStackLayout>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer CommandParameter="{Binding .}"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CandidaturesViewModel}}, Path=OuvrirCommand}" />
+                                </Border.GestureRecognizers>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="6" IsVisible="{Binding Vide}" Margin="0,40">
+                    <Label Text="📁" FontSize="40" HorizontalOptions="Center" />
+                    <Label Text="Aucun dossier suivi" Style="{StaticResource H2}" HorizontalOptions="Center" />
+                    <Label Text="Ouvrez un concours puis touchez « Ajouter à ma checklist physique »." Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

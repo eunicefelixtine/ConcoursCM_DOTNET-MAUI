@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:ctl="clr-namespace:ConcoursCM.Controls" xmlns:vm="clr-namespace:ConcoursCM.ViewModels" x:Class="ConcoursCM.Views.ChecklistPage" Title="Checklist">
+    <Grid RowDefinitions="Auto,*">
+        <ctl:TopBar Title="Checklist Dossier" ShowBack="True" ShowBell="False" AvatarText="{Binding Avatar}" />
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="16,12,16,24" Spacing="12">
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout Spacing="0">
+                        <Label Text="Checklist Dossier" Style="{StaticResource H2}" FontSize="20" />
+                        <Label Text="{Binding ConcoursTitre}" Style="{StaticResource Link}" TextColor="{StaticResource Teal}" />
+                    </VerticalStackLayout>
+                    <Border Grid.Column="1" Style="{StaticResource Badge}" VerticalOptions="Center">
+                        <Label Text="{Binding SessionTexte, StringFormat='● {0}'}" Style="{StaticResource BadgeText}" TextColor="{StaticResource Teal}" />
+                    </Border>
+                </Grid>
+
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="🗄 Avancement des pièces" FontAttributes="Bold" FontSize="14" />
+                            <Label Grid.Column="1" Text="{Binding PretesTexte}" Style="{StaticResource Link}" />
+                        </Grid>
+                        <ProgressBar Progress="{Binding Progress}" HeightRequest="8" />
+                        <Label Text="{Binding Consigne}" Style="{StaticResource Muted}" FontSize="12" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Pieces}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource Card}" Padding="12">
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <Border WidthRequest="26" HeightRequest="26" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{Binding CaseColor}" VerticalOptions="Center">
+                                        <Label Text="{Binding CaseGlyph}" TextColor="White" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+                                    </Border>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                        <Label Text="{Binding Libelle}" FontAttributes="Bold" FontSize="14" />
+                                        <Label Text="{Binding DetailTexte}" Style="{StaticResource Muted}" FontSize="12" IsVisible="{Binding DetailFait}" />
+                                        <Label Text="{Binding DetailTexte}" TextColor="{StaticResource Danger}" FontAttributes="Bold" FontSize="12" IsVisible="{Binding DetailAFaire}" />
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="2" Text="{Binding Icone}" FontSize="20" VerticalOptions="Center" />
+                                </Grid>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer CommandParameter="{Binding .}"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ChecklistViewModel}}, Path=BasculerCommand}" />
+                                </Border.GestureRecognizers>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Border Style="{StaticResource Card}" Padding="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="📍 LIEU DE DÉPÔT" Style="{StaticResource Caption}" FontSize="10" TextColor="{StaticResource Teal}" />
+                            <Label Text="{Binding Lieu}" FontAttributes="Bold" FontSize="13" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="1" Style="{StaticResource Card}" Padding="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="⏰ DATE LIMITE" Style="{StaticResource Caption}" FontSize="10" TextColor="{StaticResource Danger}" />
+                            <Label Text="{Binding DateLimite}" FontAttributes="Bold" FontSize="13" TextColor="{StaticResource Danger}" />
+                            <Label Text="{Binding HeureLimite}" Style="{StaticResource Muted}" FontSize="12" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <Button Text="📄  Générer la fiche récapitulative (PDF)" Style="{StaticResource PrimaryButton}" BackgroundColor="{StaticResource PrimaryDeep}"
+                        Command="{Binding GenererFicheCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

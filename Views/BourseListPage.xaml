@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:ctl="clr-namespace:ConcoursCM.Controls" xmlns:vm="clr-namespace:ConcoursCM.ViewModels" x:Class="ConcoursCM.Views.BourseListPage" Title="Bourses">
+    <Grid RowDefinitions="Auto,*">
+        <ctl:TopBar Title="Bourses" BadgeCount="{Binding NbNonLus}" AvatarText="{Binding Avatar}" />
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Bourses}" SelectionMode="None">
+            <CollectionView.Header>
+                <VerticalStackLayout Padding="16,10,16,4" Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="🎓 Bourses Disponibles" Style="{StaticResource H2}" FontSize="20" />
+                        <Border Grid.Column="1" Style="{StaticResource Badge}"><Label Text="✔ MINESUP vérifié" Style="{StaticResource BadgeText}" /></Border>
+                    </Grid>
+                    <Label Text="Opportunités académiques certifiées pour étudiants et diplômés." Style="{StaticResource Muted}" FontSize="12" />
+                    <Border Style="{StaticResource FieldBorder}" Padding="12,0">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Text="🔍" FontSize="18" VerticalOptions="Center" />
+                            <Entry Grid.Column="1" Placeholder="Rechercher une bourse, un pays..." Text="{Binding Recherche}" />
+                        </Grid>
+                    </Border>
+                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                        <HorizontalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Chips}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="{Binding Bg}" StrokeThickness="0" StrokeShape="RoundRectangle 99" Padding="16,9">
+                                        <Label Text="{Binding Label}" TextColor="{Binding Fg}" FontAttributes="Bold" FontSize="13" />
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer CommandParameter="{Binding .}"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BourseListViewModel}}, Path=ChoisirCategorieCommand}" />
+                                        </Border.GestureRecognizers>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </HorizontalStackLayout>
+                    </ScrollView>
+                </VerticalStackLayout>
+            </CollectionView.Header>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Style="{StaticResource Card}" Margin="16,6">
+                        <VerticalStackLayout Spacing="10">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                <Border WidthRequest="46" HeightRequest="46" Style="{StaticResource SoftBox}" Padding="0" VerticalOptions="Start">
+                                    <Label Text="{Binding Initiales}" Style="{StaticResource Link}" FontSize="15" HorizontalOptions="Center" VerticalOptions="Center" />
+                                </Border>
+                                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                    <Label Text="{Binding Zone}" TextColor="{StaticResource Teal}" FontAttributes="Bold" FontSize="11" />
+                                    <Label Text="{Binding Titre}" FontAttributes="Bold" FontSize="16" />
+                                </VerticalStackLayout>
+                                <Label Grid.Column="2" Text="{Binding FavoriGlyph}" FontSize="22" VerticalOptions="Start">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer CommandParameter="{Binding .}"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BourseListViewModel}}, Path=BasculerFavoriCommand}" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </Grid>
+                            <Border Style="{StaticResource SoftBox}" Padding="10,8">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <Label Text="{Binding Avantages}" FontSize="13" LineBreakMode="TailTruncation" />
+                                    <Label Grid.Column="1" Text="{Binding DateTexte, StringFormat='📅 {0}'}" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource Danger}" IsVisible="{Binding DateUrgente}" />
+                                    <Label Grid.Column="1" Text="{Binding DateTexte, StringFormat='📅 {0}'}" FontSize="13" Style="{StaticResource Muted}" IsVisible="{Binding DateNormale}" />
+                                </Grid>
+                            </Border>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Border Style="{StaticResource Badge}"><Label Text="{Binding Portee}" Style="{StaticResource BadgeText}" /></Border>
+                                <Button Grid.Column="1" Text="Consulter l'offre  →" Style="{StaticResource SmallButton}" BackgroundColor="{StaticResource PrimaryDeep}" CommandParameter="{Binding .}"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BourseListViewModel}}, Path=ConsulterCommand}" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.EmptyView>
+                <Label Text="Aucune bourse ne correspond à votre recherche." Style="{StaticResource Muted}" HorizontalOptions="Center" Margin="20,40" />
+            </CollectionView.EmptyView>
+        </CollectionView>
+    </Grid>
+</ContentPage>
