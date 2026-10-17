@@ -1,0 +1,9 @@
+global using CommunityToolkit.Mvvm.ComponentModel;
+global using CommunityToolkit.Mvvm.Input;
+global using System.Collections.ObjectModel;
+global using System.Globalization;
+global using ConcoursCM.Models;
+global using ConcoursCM.Services;
+global using ConcoursCM.Helpers;
+global using Microsoft.Maui.Storage;
+global using Microsoft.Maui.ApplicationModel;
