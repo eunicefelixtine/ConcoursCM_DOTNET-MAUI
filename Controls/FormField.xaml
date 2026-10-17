@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ConcoursCM.Controls.FormField">
+    <VerticalStackLayout Spacing="6">
+        <Grid ColumnDefinitions="*,Auto">
+            <Label x:Name="TitleLabel" Style="{StaticResource Caption}" FontSize="12" />
+            <Label x:Name="HintLabel" Grid.Column="1" Style="{StaticResource Muted}" FontSize="11" />
+        </Grid>
+        <Border Style="{StaticResource FieldBorder}">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                <Label x:Name="IconLabel" VerticalOptions="Center" FontSize="18" />
+                <Entry x:Name="Input" Grid.Column="1" TextChanged="OnTextChanged" />
+                <Label x:Name="EyeLabel" Grid.Column="2" Text="👁" FontSize="18" VerticalOptions="Center" IsVisible="False">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnEyeTapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </Grid>
+        </Border>
+        <Label x:Name="ErrorLabel" TextColor="{StaticResource Danger}" FontSize="12" IsVisible="False" />
+    </VerticalStackLayout>
+</ContentView>

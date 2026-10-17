@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ConcoursCM.Controls.TopBar">
+    <Border Style="{StaticResource Card}" StrokeShape="RoundRectangle 0" Padding="16,10">
+        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+            <Grid>
+                <Border x:Name="BackBox" WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 12" StrokeThickness="0"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource SoftLight}, Dark={StaticResource SoftDark}}" IsVisible="False">
+                    <Label Text="←" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnBack" /></Border.GestureRecognizers>
+                </Border>
+                <Border x:Name="LogoBox" WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="{StaticResource Primary}">
+                    <Label Text="🎓" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+            </Grid>
+            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="0">
+                <Label x:Name="BrandLabel" Text="ConcoursCM" Style="{StaticResource Link}" FontSize="11" />
+                <Label x:Name="TitleLabel" FontSize="20" FontAttributes="Bold" LineBreakMode="TailTruncation" />
+            </VerticalStackLayout>
+            <HorizontalStackLayout Grid.Column="2" Spacing="14" VerticalOptions="Center">
+                <Grid x:Name="BellBox" WidthRequest="34" HeightRequest="34">
+                    <Label Text="🔔" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                    <Border x:Name="BadgeBox" BackgroundColor="{StaticResource Danger}" StrokeThickness="0" StrokeShape="RoundRectangle 99"
+                            Padding="5,1" HorizontalOptions="End" VerticalOptions="Start" IsVisible="False">
+                        <Label x:Name="BadgeLabel" TextColor="White" FontSize="10" FontAttributes="Bold" />
+                    </Border>
+                    <Grid.GestureRecognizers><TapGestureRecognizer Tapped="OnBell" /></Grid.GestureRecognizers>
+                </Grid>
+                <Border WidthRequest="38" HeightRequest="38" StrokeShape="RoundRectangle 99" StrokeThickness="0" BackgroundColor="{StaticResource Primary}">
+                    <Label x:Name="AvatarLabel" TextColor="White" FontAttributes="Bold" FontSize="14" HorizontalOptions="Center" VerticalOptions="Center" />
+                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnAvatar" /></Border.GestureRecognizers>
+                </Border>
+            </HorizontalStackLayout>
+        </Grid>
+    </Border>
+</ContentView>
