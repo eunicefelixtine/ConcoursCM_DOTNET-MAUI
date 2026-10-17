@@ -67,23 +67,24 @@ Les écrans suivent les maquettes fournies (12 écrans) et l'arborescence de nav
 
 | Élément | Choix | Raison |
 |---|---|---|
-| Framework | **.NET MAUI** (cible `net9.0-android`) | Demande du projet. Un seul code C#/XAML, extensible à iOS en ajoutant `net9.0-ios` |
+| Framework | **.NET MAUI** (cible `net10.0-android`) | Demande du projet. Un seul code C#/XAML, extensible à iOS en ajoutant `net10.0-ios` |
 | Langage | **C# (LangVersion latest)** avec `Nullable` et `ImplicitUsings` activés | Moins d'erreurs grâce aux références nulles vérifiées ; moins de code répétitif |
 | UI | **XAML** | Interface déclarative, liaisons de données, thèmes clair/sombre |
-| SDK | **.NET 9** | Version prévue pour MAUI 9. Si vous avez .NET 10, installez le SDK 9 en parallèle (voir §11) |
+| SDK | **.NET 10** | Le projet cible .NET 10 (`net10.0-android`) avec `Microsoft.Maui.Controls` 10.0.20 |
 | Android minimum | **API 24 (Android 7.0)** | Couvre la grande majorité des téléphones utilisés localement, y compris les modèles d'entrée de gamme |
 
 ### Paquets NuGet
 
 | Paquet | Version | Rôle | Pourquoi ce choix |
 |---|---|---|---|
+| `Microsoft.Maui.Controls` | 10.0.20 | Contrôles et moteur de MAUI, version alignée sur .NET 10 | Fournit Shell, pages, XAML ; la version doit correspondre au SDK .NET 10 |
 | `CommunityToolkit.Mvvm` | 8.3.2 | Génère le code MVVM (`[ObservableProperty]`, `[RelayCommand]`) | Supprime des centaines de lignes de code répétitif, très répandu et bien maintenu |
 | `CommunityToolkit.Maui` | 9.1.1 | Toasts et convertisseurs (`IsStringNotNullOrEmptyConverter`, `InvertedBoolConverter`) | Messages discrets (toast) sans bibliothèque supplémentaire |
 | `sqlite-net-pcl` | 1.9.172 | Accès à la base **SQLite** locale | ORM léger et asynchrone, adapté à une base embarquée sur mobile |
 | `SQLitePCLRaw.bundle_green` | 2.1.10 | Moteur natif SQLite pour Android | Dépendance nécessaire à `sqlite-net-pcl` pour fonctionner sur appareil |
 | `Plugin.LocalNotification` | 11.1.4 | Notifications locales planifiées | Les rappels s'affichent **sans internet** et sans serveur de notification |
 | `QuestPDF` | 2024.12.3 | Génération de la fiche récapitulative PDF | API simple et lisible ; licence Community gratuite sous conditions (voir §13) |
-| `Microsoft.Extensions.Logging.Debug` | 9.0.0 | Journalisation en mode Debug | Aide au diagnostic pendant le développement |
+| `Microsoft.Extensions.Logging.Debug` | 10.0.0 | Journalisation en mode Debug | Aide au diagnostic pendant le développement |
 
 ### Pourquoi une base locale (SQLite) plutôt qu'un serveur ?
 - Le projet doit fonctionner **hors connexion** et en **2G/3G**.
@@ -314,7 +315,7 @@ Les styles reprennent les maquettes : bleu royal profond, cyan électrique, cart
 ## 11. Installation et lancement
 
 ### Prérequis
-- **SDK .NET 9** (`dotnet --list-sdks` doit afficher une version 9.x). Si vous avez seulement .NET 10, installez le SDK 9 en parallèle ; les deux coexistent sans problème.
+- **SDK .NET 10** (`dotnet --list-sdks` doit afficher une version 10.x).
 - **JDK 17** et **SDK Android** (API 34 conseillée), installés via Android Studio ou Visual Studio.
 - Charge de travail MAUI Android :
   ```bash
@@ -322,13 +323,7 @@ Les styles reprennent les maquettes : bleu royal profond, cyan électrique, cart
   ```
 - Un émulateur Android ou un téléphone avec le débogage USB activé.
 
-### Épingler le SDK 9 (si .NET 10 est aussi installé)
-Créez `global.json` à la racine du projet :
-```json
-{ "sdk": { "version": "9.0.100", "rollForward": "latestFeature" } }
-```
-
-### Visual Studio 2022 (17.12+)
+### Visual Studio à jour (compatible .NET 10)
 1. Ouvrir `ConcoursCM.csproj`.
 2. Choisir l'émulateur ou le téléphone dans la barre d'outils.
 3. Appuyer sur **F5**.
@@ -338,7 +333,7 @@ Créez `global.json` à la racine du projet :
 2. Ouvrir le dossier du projet, puis dans le terminal :
    ```bash
    dotnet restore
-   dotnet build -t:Run -f net9.0-android
+   dotnet build -t:Run -f net10.0-android
    ```
 3. Démarrer d'abord l'émulateur, ou brancher le téléphone (`adb devices` doit le lister).
 
@@ -386,7 +381,7 @@ Le premier build dure 3 à 6 minutes ; les suivants sont plus rapides.
 | **Comptes et annonces** | Uniquement sur l'appareil | API + base serveur partagée entre appareils |
 | **Mode Low Data** | Préférence enregistrée, effet limité | Compression des PDF et cache réseau une fois une API en place |
 | **Pièces d'un concours publié** | Modèle de 4 pièces par défaut | Écran d'édition des pièces pour l'institution |
-| **iOS** | Non configuré | Ajouter `net9.0-ios` et les fichiers de la plateforme (nécessite un Mac) |
+| **iOS** | Non configuré | Ajouter `net10.0-ios` et les fichiers de la plateforme (nécessite un Mac) |
 
 ### Points à décider
 - **Licence QuestPDF** : la licence *Community* est gratuite pour les petites structures, mais vérifiez qu'elle s'applique à votre organisation avant publication.
@@ -399,7 +394,7 @@ Le premier build dure 3 à 6 minutes ; les suivants sont plus rapides.
 2. Vraie passerelle SMS et notifications push.
 3. Édition des pièces requises par l'institution.
 4. Tests unitaires des services (validation, urgence, éligibilité, règles de publication).
-5. Passage à .NET 10 une fois les paquets vérifiés.
+5. Mise à jour des paquets NuGet (CommunityToolkit.Maui, Plugin.LocalNotification, QuestPDF) vers leurs dernières versions compatibles .NET 10.
 
 ---
 
@@ -407,7 +402,7 @@ Le premier build dure 3 à 6 minutes ; les suivants sont plus rapides.
 
 | Symptôme | Cause probable | Solution |
 |---|---|---|
-| `NETSDK1139` / cible `net9.0-android` introuvable | SDK 9 absent ou charge de travail manquante | Installer le SDK 9 puis `dotnet workload install maui-android` |
+| `NETSDK1139` / cible `net10.0-android` introuvable | SDK 10 absent ou charge de travail manquante | Installer le SDK 10 puis `dotnet workload install maui-android` |
 | *Android SDK not found* | Chemin du SDK non détecté | Ajouter `-p:AndroidSdkDirectory="<chemin du SDK>"` |
 | *JDK not found* | JDK 17 absent | Installer le JDK 17 ou `-p:JavaSdkDirectory="<chemin>"` |
 | Aucun appareil listé | Émulateur éteint ou débogage USB désactivé | Démarrer l'émulateur, vérifier `adb devices` |
