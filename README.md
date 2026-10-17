@@ -4,25 +4,6 @@
 
 ---
 
-## Sommaire
-
-1. [Contexte et objectifs](#1-contexte-et-objectifs)
-2. [Fonctionnalités](#2-fonctionnalités)
-3. [Stack technique et justification des choix](#3-stack-technique-et-justification-des-choix)
-4. [Architecture](#4-architecture)
-5. [Structure du projet](#5-structure-du-projet)
-6. [Navigation](#6-navigation)
-7. [Modèle de données](#7-modèle-de-données)
-8. [Logique métier détaillée](#8-logique-métier-détaillée)
-9. [Sécurité et lutte contre la fraude](#9-sécurité-et-lutte-contre-la-fraude)
-10. [Design system](#10-design-system)
-11. [Installation et lancement](#11-installation-et-lancement)
-12. [Parcours de test](#12-parcours-de-test)
-13. [Limites actuelles et évolutions](#13-limites-actuelles-et-évolutions)
-14. [Dépannage](#14-dépannage)
-
----
-
 ## 1. Contexte et objectifs
 
 Au Cameroun, les informations sur les concours (ENSPY, FMSB, ENAM…) et sur les bourses sont dispersées entre arrêtés ministériels, sites d'écoles et réseaux sociaux. Les candidats risquent de manquer une date limite, d'oublier une pièce du dossier physique, ou de tomber sur de faux intermédiaires qui demandent de l'argent.
@@ -86,11 +67,6 @@ Les écrans suivent les maquettes fournies (12 écrans) et l'arborescence de nav
 | `QuestPDF` | 2024.12.3 | Génération de la fiche récapitulative PDF | API simple et lisible ; licence Community gratuite sous conditions (voir §13) |
 | `Microsoft.Extensions.Logging.Debug` | 10.0.0 | Journalisation en mode Debug | Aide au diagnostic pendant le développement |
 
-### Pourquoi une base locale (SQLite) plutôt qu'un serveur ?
-- Le projet doit fonctionner **hors connexion** et en **2G/3G**.
-- Il n'existe pas encore d'API : SQLite permet de construire et valider toute la logique métier dès maintenant.
-- L'accès aux données est isolé dans les services : remplacer SQLite par une API REST plus tard ne touchera ni les pages ni les ViewModels.
-
 ---
 
 ## 4. Architecture
@@ -126,112 +102,23 @@ Le projet applique le patron **MVVM** (Model – View – ViewModel) avec **inje
 
 ---
 
-## 5. Structure du projet
+## 5. Logique métier détaillée
 
-```
-ConcoursCM/
-├── ConcoursCM.csproj          Projet, cible, paquets NuGet
-├── MauiProgram.cs             Configuration, injection de dépendances
-├── GlobalUsings.cs            Espaces de noms importés partout
-├── App.xaml(.cs)              Ressources globales, application du thème
-├── AppShell.xaml(.cs)         Navigation (Shell), routes, restauration de session
-│
-├── Models/
-│   ├── Enums.cs               Rôles, statuts, urgence, éligibilité, OpResult
-│   ├── Utilisateur.cs         Compte candidat ou institution
-│   ├── Concours.cs            Concours + propriétés calculées (J-x, urgence)
-│   ├── Bourse.cs              Bourse + propriétés calculées
-│   └── Autres.cs              PieceRequise, ChecklistItem, Favori, Alerte
-│
-├── Helpers/
-│   ├── Fmt.cs                 Dates FR, FCFA, initiales, normalisation de texte
-│   └── Validation.cs          Validation identifiants/mots de passe + PBKDF2
-│
-├── Services/
-│   ├── DatabaseService.cs     Création des tables + données de démonstration
-│   ├── AuthService.cs         Inscription, connexion, session, copie sécurisée des PDF
-│   ├── ConcoursService.cs     Catalogue, recherche, tri, favoris, éligibilité
-│   ├── ChecklistService.cs    Suivi du dossier physique
-│   ├── AlerteService.cs       Rappels J-7/J-3/J-1 et notifications locales
-│   ├── PublicationService.cs  Publication contrôlée + modération simulée
-│   ├── FicheRecapService.cs   PDF récapitulatif du dossier
-│   └── Infra.cs               Paramètres, navigation/dialogues, SMS (interface)
-│
-├── ViewModels/                Un ViewModel par écran + Items.cs (lignes de liste)
-├── Views/                     12 pages XAML
-├── Controls/                  FormField, SegmentedTabs, TopBar (réutilisables)
-├── Resources/                 Couleurs, styles, icône, écran de démarrage
-└── Platforms/Android/         Manifeste (permissions), activité, application
-```
-
----
-
-## 6. Navigation
-
-Implémentée avec **.NET MAUI Shell** (`AppShell.xaml`).
-
-```
-Connexion ──► Inscription candidat
-    │   └────► Inscription institution
-    ▼
-Barre du bas : Accueil │ Concours │ Bourses │ Profil
-                  │         │          │         │
-                  │         ▼          ▼         ├─► Mes candidatures
-                  │   Détail concours  Offre     ├─► Publier une annonce (institutions)
-                  │         │          (portail) └─► Se déconnecter
-                  │         ▼
-                  │      Checklist ──► Fiche PDF
-                  ▼
-        Centre d'alertes (cloche, accessible partout)
-```
-
-- **Routes poussées** (hors barre du bas) : `register`, `institution-register`, `concours-detail`, `checklist`, `candidatures`, `alertes`, `publish`.
-- **Paramètres** passés dans l'URL (`concours-detail?id=3`) et reçus via `IQueryAttributable`.
-- **Session persistante** : au démarrage, si une session existe, l'application ouvre directement l'accueil.
-
-Par rapport à l'arborescence d'origine, ont été ajoutés : la page **Mes candidatures** (bouton du Profil) et l'accès à la **cloche d'alertes depuis tous les écrans**.
-
----
-
-## 7. Modèle de données
-
-Base SQLite `concourscm.db3`, stockée dans le dossier privé de l'application.
-
-| Table | Contenu | Points clés |
-|---|---|---|
-| `Utilisateurs` | Candidats et institutions | Identifiant unique ; mot de passe **haché + sel** (jamais en clair) ; rôle ; niveau d'études ; statut d'accréditation |
-| `Concours` | Annonces de concours | Date et **heure** de clôture, places, frais, arrêté, lieu de dépôt, statut de publication |
-| `Bourse` | Annonces de bourses | Portée (National/International/Partenariat), avantages, clôture, lien officiel |
-| `PieceRequise` | Pièces exigées par concours | Libellé, détail, icône, ordre |
-| `ChecklistItem` | État de chaque pièce par candidat | Sa création équivaut à **suivre** le concours |
-| `Favori` | Concours / bourses favoris | Un favori active les rappels |
-| `Alerte` | Notifications du centre d'alertes | Champ `Cle` unique pour éviter les doublons |
-
-**Propriétés calculées** (non stockées, marquées `[Ignore]`) : jours restants, concours clos, urgence, badge « J-x », nouveauté (≤ 7 jours).
-
-**Données de démonstration** : trois concours (ENSPY, FMSB, ENAM) et trois bourses (MINESUP, Eiffel, Commonwealth) sont créés au premier lancement, avec des dates **relatives à aujourd'hui** pour que l'application paraisse toujours à jour.
-
-**Préférences** (`Preferences` MAUI) : session, thème, mode Low Data, seuils de rappel, compteur d'échecs de connexion.
-
----
-
-## 8. Logique métier détaillée
-
-### 8.1 Authentification (`AuthService`)
+### 5.1 Authentification (`AuthService`)
 - **Identifiants normalisés** : e-mail en minuscules ; téléphone converti en `+237XXXXXXXXX` (acceptant espaces, points, tirets, avec ou sans indicatif).
 - **Mot de passe** : minimum 6 caractères (candidat), 8 avec lettres **et** chiffres (institution).
 - **Verrouillage** : après 5 échecs, connexion bloquée 5 minutes.
 - **Message d'erreur volontairement générique** (« Identifiant ou mot de passe incorrect ») pour ne pas révéler quels comptes existent.
 - **Séparation des rôles** : un compte institution ne peut pas se connecter par l'onglet Candidat, et inversement, avec un message explicatif.
 
-### 8.2 Catalogue (`ConcoursService`)
+### 5.2 Catalogue (`ConcoursService`)
 - **Recherche tolérante** : insensible à la casse et aux accents (`Fmt.Normaliser`).
 - **Filtres** : catégorie, concours ouverts uniquement, compatibles avec mon niveau.
 - **Tri** : par date de clôture (les concours clos passent en dernier), par date de publication, alphabétique.
 - **« À la Une »** : concours et bourses encore ouverts qui se terminent dans les 30 jours, les plus proches d'abord.
 - **Éligibilité** : le niveau du profil (ex. *Bac C*) est comparé aux niveaux acceptés par le concours. Résultat : Éligible, Non éligible ou Inconnue (profil incomplet).
 
-### 8.3 Urgence des échéances
+### 5.3 Urgence des échéances
 La clôture est calculée à l'**heure précise** (ex. 15h30), pas seulement au jour.
 
 | Jours restants | Niveau | Affichage |
@@ -242,13 +129,13 @@ La clôture est calculée à l'**heure précise** (ex. 15h30), pas seulement au 
 | ≤ 30 | Proche | Orange |
 | > 30 | Aucun | Bleu |
 
-### 8.4 Checklist (`ChecklistService`)
+### 5.4 Checklist (`ChecklistService`)
 - Les lignes de checklist sont créées à la première ouverture ; si l'institution ajoute une pièce ensuite, elle apparaît automatiquement.
 - Quand toutes les pièces sont cochées : message « Dossier complet ✓ » avec lieu et heure de dépôt.
 - Si le concours est clos, la checklist l'indique.
 - Suivre ou cocher une pièce **recalcule les rappels**.
 
-### 8.5 Rappels (`AlerteService`)
+### 5.5 Rappels (`AlerteService`)
 - Pour chaque concours **suivi ou mis en favori**, et chaque bourse favorite :
   1. des **notifications locales** sont planifiées à 8h, J-7, J-3 et J-1 (selon les seuils activés) ;
   2. une **alerte** est ajoutée au centre d'alertes au plus petit seuil atteint, avec le nombre de pièces manquantes.
@@ -257,7 +144,7 @@ La clôture est calculée à l'**heure précise** (ex. 15h30), pas seulement au 
 - **Annonces officielles** : quand une annonce est validée, tous les candidats reçoivent une alerte « Arrêté officiel ».
 - Les SMS passent par `ISmsGateway` (simulé pour l'instant).
 
-### 8.6 Publication (`PublicationService`)
+### 5.6 Publication (`PublicationService`)
 Règles appliquées avant d'accepter une annonce :
 
 | Règle | Détail |
@@ -273,7 +160,7 @@ Règles appliquées avant d'accepter une annonce :
 
 **Modération simulée** : l'annonce passe de *En attente* à *Publié*. En **Debug**, la validation est immédiate pour faciliter les tests ; en **Release**, elle attend **24 h**, comme annoncé dans l'interface.
 
-### 8.7 Fiche récapitulative (`FicheRecapService`)
+### 5.7 Fiche récapitulative (`FicheRecapService`)
 Génère un PDF A4 avec : candidat, concours, tutelle, quittance, date limite, lieu de dépôt, avancement, liste des pièces cochées/à faire, rappel anti-intermédiaire. Le fichier est ensuite partagé via la feuille de partage Android (WhatsApp, e-mail, impression…).
 
 ---
@@ -291,8 +178,6 @@ Génère un PDF A4 avec : candidat, concours, tutelle, quittance, date limite, l
 | E-mail institutionnel obligatoire | Inscription institution | Écarte les faux établissements |
 | PDF copiés dans le stockage privé avec un nom aléatoire | `FichierService` | Évite les collisions et l'exposition du fichier d'origine |
 | Taille et extension des PDF contrôlées | `FichierService` | Évite les fichiers volumineux ou d'un autre type |
-
-> **Important :** cette sécurité est celle d'une application locale. Tant que les comptes restent sur le téléphone, ils ne sont pas partagés entre appareils, et la vérification des institutions est simulée. Un vrai déploiement exige un serveur (voir §13).
 
 ---
 
@@ -341,75 +226,4 @@ Le premier build dure 3 à 6 minutes ; les suivants sont plus rapides.
 
 ---
 
-## 12. Parcours de test
-
-### Candidat
-1. Connexion → **S'inscrire** → nom, numéro `6 94 12 34 56`, région, mot de passe (6+ caractères), conditions.
-2. **Profil → Compléter mon niveau d'études** : choisir *Bac C*.
-3. **Concours** : vérifier le badge « Éligible », tester la recherche (essayez « medecine » sans accent), le tri et les filtres.
-4. Ouvrir **ENSPY** → ajouter en favori (★) → **Ajouter à ma checklist physique**.
-5. Cocher les pièces : la progression et le message de dépôt se mettent à jour.
-6. **Générer la fiche récapitulative (PDF)** → partager.
-7. Cloche → **Centre d'alertes** : consulter le rappel, régler les seuils J-7/J-3/J-1.
-8. **Profil → thème sombre**, mode Low Data, modification du numéro de rappel.
-
-### Institution
-1. Connexion → onglet **École / Inst.** → **S'inscrire**.
-2. Remplir le formulaire avec un e-mail institutionnel (pas Gmail) et un PDF de mandat.
-3. En Debug, l'accréditation est validée aussitôt ; **Accueil → Publier une annonce officielle**.
-4. Lien valide, par exemple `https://concours.monecole.cm/inscription`, arrêté PDF, dates cohérentes.
-5. **Profil → Mes annonces** : l'annonce apparaît « Publiée ».
-6. Se connecter en candidat : une alerte « Arrêté officiel » est reçue.
-
-### Cas d'erreur à essayer
-- Lien `http://…` ou raccourci `bit.ly/…` → refusé.
-- E-mail `@gmail.com` pour une institution → refusé.
-- 5 mots de passe faux de suite → verrouillage 5 minutes.
-- PDF de plus de 5 Mo (mandat) ou 8 Mo (arrêté) → refusé.
-
----
-
-## 13. Limites actuelles et évolutions
-
-### Ce qui est simulé ou absent
-| Sujet | État actuel | Pour le rendre réel |
-|---|---|---|
-| **SMS** | Simulés (`PlaceholderSmsGateway`) | Implémenter `ISmsGateway` avec un agrégateur SMS depuis un serveur |
-| **Connexion Google** | Message « bientôt disponible » | Serveur d'authentification OAuth |
-| **Mot de passe oublié** | Message explicatif | Envoi de code par e-mail/SMS depuis un serveur |
-| **Modération des annonces** | Délai simulé localement | Back-office d'administration réel |
-| **Comptes et annonces** | Uniquement sur l'appareil | API + base serveur partagée entre appareils |
-| **Mode Low Data** | Préférence enregistrée, effet limité | Compression des PDF et cache réseau une fois une API en place |
-| **Pièces d'un concours publié** | Modèle de 4 pièces par défaut | Écran d'édition des pièces pour l'institution |
-| **iOS** | Non configuré | Ajouter `net10.0-ios` et les fichiers de la plateforme (nécessite un Mac) |
-
-### Points à décider
-- **Licence QuestPDF** : la licence *Community* est gratuite pour les petites structures, mais vérifiez qu'elle s'applique à votre organisation avant publication.
-- **Adresse de support** : `EmailSupport` dans `ProfilViewModels.cs` contient une valeur d'exemple (`support@concourscm.cm`).
-- **Données** : les concours de démonstration (`DatabaseService.SeedAsync`) sont fictifs ; leurs dates, frais et liens ne doivent pas être pris pour des informations officielles.
-- **Plages d'opérateurs** : la détection MTN/Orange/Nexttel/Camtel est indicative et peut être inexacte.
-
-### Pistes d'évolution
-1. API ASP.NET + base serveur (comptes, annonces, modération).
-2. Vraie passerelle SMS et notifications push.
-3. Édition des pièces requises par l'institution.
-4. Tests unitaires des services (validation, urgence, éligibilité, règles de publication).
-5. Mise à jour des paquets NuGet (CommunityToolkit.Maui, Plugin.LocalNotification, QuestPDF) vers leurs dernières versions compatibles .NET 10.
-
----
-
-## 14. Dépannage
-
-| Symptôme | Cause probable | Solution |
-|---|---|---|
-| `NETSDK1139` / cible `net10.0-android` introuvable | SDK 10 absent ou charge de travail manquante | Installer le SDK 10 puis `dotnet workload install maui-android` |
-| *Android SDK not found* | Chemin du SDK non détecté | Ajouter `-p:AndroidSdkDirectory="<chemin du SDK>"` |
-| *JDK not found* | JDK 17 absent | Installer le JDK 17 ou `-p:JavaSdkDirectory="<chemin>"` |
-| Aucun appareil listé | Émulateur éteint ou débogage USB désactivé | Démarrer l'émulateur, vérifier `adb devices` |
-| Pas de notification | Permission refusée | Autoriser les notifications dans les réglages du téléphone |
-| Un rappel exact n'arrive pas à l'heure | Économiseur de batterie du constructeur | Désactiver l'optimisation de batterie pour l'application |
-| Données bizarres après changement de modèle | Ancienne base locale | Désinstaller l'application pour recréer la base |
-
----
-
-*Projet développé avec .NET MAUI, CommunityToolkit.Mvvm, SQLite et QuestPDF. Ce document décrit l'état du code livré ; il n'a pas encore été compilé ni exécuté sur appareil : signalez toute erreur de build pour qu'elle soit corrigée.*
+Projet réalisé par : NZEUTEM DOMMOE Eunice Felixtine - 22G00347
