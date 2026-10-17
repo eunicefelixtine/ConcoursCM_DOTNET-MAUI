@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- Android uniquement pour démarrer (ajoutez net9.0-ios si vous avez un Mac) -->
-    <TargetFrameworks>net9.0-android</TargetFrameworks>
+    <!-- Android uniquement pour démarrer (ajoutez net10.0-ios si vous avez un Mac) -->
+    <TargetFrameworks>net10.0-android</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>ConcoursCM</RootNamespace>
     <UseMaui>true</UseMaui>
@@ -24,13 +24,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.20" />
     <PackageReference Include="CommunityToolkit.Maui" Version="9.1.1" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
     <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.10" />
     <PackageReference Include="Plugin.LocalNotification" Version="11.1.4" />
     <PackageReference Include="QuestPDF" Version="2024.12.3" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
   </ItemGroup>
 
 </Project>
