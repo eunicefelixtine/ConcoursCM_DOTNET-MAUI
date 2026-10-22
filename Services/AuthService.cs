@@ -1,6 +1,6 @@
 namespace ConcoursCM.Services;
 
-public class AuthService(DatabaseService dbs)
+public class AuthService(DatabaseService dbs, ApiClient api)
 {
     const string SessionKey = "session_user_id";
     const int MaxEchecs = 5;
@@ -12,6 +12,15 @@ public class AuthService(DatabaseService dbs)
     {
         var id = Preferences.Get(SessionKey, 0);
         if (id == 0) return false;
+
+        // Le serveur fait foi ; hors ligne, la session locale prend le relais.
+        var distant = await api.GetAsync<Utilisateur>($"/api/utilisateurs/{id}");
+        if (distant != null)
+        {
+            Current = await CacherAsync(distant);
+            return true;
+        }
+
         var db = await dbs.GetAsync();
         Current = await db.FindAsync<Utilisateur>(id);
         return Current != null;
@@ -32,29 +41,45 @@ public class AuthService(DatabaseService dbs)
         if (string.IsNullOrEmpty(motDePasse))
             return OpResult.Echec("Saisissez votre mot de passe.");
 
-        var db = await dbs.GetAsync();
-        var user = (await db.Table<Utilisateur>().ToListAsync()).FirstOrDefault(u => u.Identifiant == id);
-
-        if (user == null || !PasswordHasher.Verifier(motDePasse, user.MotDePasseHash, user.Sel))
+        // 1) Authentification serveur
+        var distant = await api.PostAsync<AuthApiResponse>("/api/auth/connexion",
+            new ConnexionApiRequest(id, motDePasse, roleAttendu));
+        if (distant is { Succes: true, Utilisateur: { } du })
         {
-            var echecs = Preferences.Get("echecs", 0) + 1;
-            if (echecs >= MaxEchecs)
-            {
-                Preferences.Set("lock_until", DateTime.UtcNow.AddMinutes(5).Ticks);
-                echecs = 0;
-            }
-            Preferences.Set("echecs", echecs);
-            return OpResult.Echec("Identifiant ou mot de passe incorrect."); // message volontairement générique
+            Preferences.Set("echecs", 0);
+            ApiClient.DefinirJeton(distant.Jeton);
+            OuvrirSession(await CacherAsync(du));
+            return OpResult.Ok();
         }
 
-        if (user.Role != roleAttendu)
+        // 2) Repli local (comptes créés hors ligne ou serveur indisponible)
+        var db = await dbs.GetAsync();
+        var user = (await db.Table<Utilisateur>().ToListAsync()).FirstOrDefault(u => u.Identifiant == id);
+        var localOk = user != null && PasswordHasher.Verifier(motDePasse, user.MotDePasseHash, user.Sel);
+
+        if (localOk && user!.Role == roleAttendu)
+        {
+            Preferences.Set("echecs", 0);
+            OuvrirSession(user);
+            return OpResult.Ok();
+        }
+
+        if (localOk && user!.Role != roleAttendu)
             return OpResult.Echec(user.Role == RoleUtilisateur.Institution
                 ? "Ce compte est un compte Institution : choisissez l'onglet « École / Inst. »."
                 : "Ce compte est un compte Candidat : choisissez l'onglet « Candidat ».");
 
-        Preferences.Set("echecs", 0);
-        OuvrirSession(user);
-        return OpResult.Ok();
+        if (distant is { Succes: false })
+            return OpResult.Echec(distant.Erreur ?? "Identifiant ou mot de passe incorrect.");
+
+        var echecs = Preferences.Get("echecs", 0) + 1;
+        if (echecs >= MaxEchecs)
+        {
+            Preferences.Set("lock_until", DateTime.UtcNow.AddMinutes(5).Ticks);
+            echecs = 0;
+        }
+        Preferences.Set("echecs", echecs);
+        return OpResult.Echec("Identifiant ou mot de passe incorrect."); // message volontairement générique
     }
 
     public async Task<OpResult> InscrireCandidatAsync(string? nom, string? identifiant, string? region, string? motDePasse, bool conditions)
@@ -66,6 +91,17 @@ public class AuthService(DatabaseService dbs)
         var errMdp = Validation.ErreurMotDePasse(motDePasse, 6, false);
         if (errMdp != null) return OpResult.Echec(errMdp);
         if (!conditions) return OpResult.Echec("Vous devez accepter les conditions d'utilisation.");
+
+        var distant = await api.PostAsync<AuthApiResponse>("/api/auth/inscription/candidat",
+            new CandidatApiRequest(nom.Trim(), id, region, motDePasse, conditions));
+        if (distant != null)
+        {
+            if (!distant.Succes || distant.Utilisateur == null)
+                return OpResult.Echec(distant.Erreur ?? "Inscription impossible.");
+            ApiClient.DefinirJeton(distant.Jeton);
+            OuvrirSession(await CacherAsync(distant.Utilisateur));
+            return OpResult.Ok();
+        }
 
         var db = await dbs.GetAsync();
         if ((await db.Table<Utilisateur>().ToListAsync()).Any(u => u.Identifiant == id))
@@ -100,12 +136,28 @@ public class AuthService(DatabaseService dbs)
         if (string.IsNullOrEmpty(mandatSource)) return OpResult.Echec("Joignez l'arrêté de nomination ou le mandat (PDF).");
         if (!certifie) return OpResult.Echec("Vous devez certifier être mandaté par l'établissement.");
 
+        var (chemin, erreurFichier) = await FichierService.CopierPdfAsync(mandatSource, "mandats", 5);
+        if (chemin == null) return OpResult.Echec(erreurFichier!);
+
+        var base64 = await FichierService.LireBase64Async(chemin);
+        if (base64 != null)
+        {
+            var distant = await api.PostAsync<AuthApiResponse>("/api/auth/inscription/institution",
+                new InstitutionApiRequest(etablissement.Trim(), tutelle, representant.Trim(), mail, tel, motDePasse, base64, certifie));
+            if (distant != null)
+            {
+                if (!distant.Succes || distant.Utilisateur == null)
+                    return OpResult.Echec(distant.Erreur ?? "Inscription impossible.");
+                distant.Utilisateur.MandatPath = chemin;
+                ApiClient.DefinirJeton(distant.Jeton);
+                OuvrirSession(await CacherAsync(distant.Utilisateur));
+                return OpResult.Ok();
+            }
+        }
+
         var db = await dbs.GetAsync();
         if ((await db.Table<Utilisateur>().ToListAsync()).Any(u => u.Identifiant == mail))
             return OpResult.Echec("Un compte existe déjà avec cet e-mail.");
-
-        var (chemin, erreurFichier) = await FichierService.CopierPdfAsync(mandatSource, "mandats", 5);
-        if (chemin == null) return OpResult.Echec(erreurFichier!);
 
         var (hash, sel) = PasswordHasher.Hacher(motDePasse!);
         var user = new Utilisateur
@@ -125,18 +177,36 @@ public class AuthService(DatabaseService dbs)
     {
         var db = await dbs.GetAsync();
         await db.UpdateAsync(u);
-        Current = u;
+
+        // Le mot de passe (hash + sel) et les chemins de fichiers locaux ne quittent jamais l'appareil.
+        var profil = new
+        {
+            u.NomComplet, u.Region, u.Niveau, u.AnneeObtention, u.SmsActif, u.NumeroSms,
+            u.NomEtablissement, u.Tutelle, u.Representant, u.EmailInstitutionnel, u.TelephoneOfficiel
+        };
+        var distant = await api.PutAsync<Utilisateur>($"/api/utilisateurs/{u.Id}", profil);
+        Current = distant != null ? await CacherAsync(distant) : u;
     }
 
     public async Task RafraichirAsync()
     {
         if (Current == null) return;
+
+        var distant = await api.GetAsync<Utilisateur>($"/api/utilisateurs/{Current.Id}");
+        if (distant != null)
+        {
+            Current = await CacherAsync(distant);
+            return;
+        }
+
         var db = await dbs.GetAsync();
         Current = await db.FindAsync<Utilisateur>(Current.Id) ?? Current;
     }
 
     public void Deconnexion()
     {
+        _ = api.PostAsync<OperationApi>("/api/auth/deconnexion");
+        ApiClient.DefinirJeton(null);
         Preferences.Remove(SessionKey);
         Current = null;
     }
@@ -145,6 +215,30 @@ public class AuthService(DatabaseService dbs)
     {
         Current = u;
         Preferences.Set(SessionKey, u.Id);
+    }
+
+    /// <summary>Recopie l'utilisateur serveur en base locale en préservant les secrets locaux.</summary>
+    async Task<Utilisateur> CacherAsync(Utilisateur distant)
+    {
+        var db = await dbs.GetAsync();
+        var local = await db.FindAsync<Utilisateur>(distant.Id)
+            ?? (await db.Table<Utilisateur>().ToListAsync()).FirstOrDefault(u => u.Identifiant == distant.Identifiant);
+
+        if (local != null)
+        {
+            if (local.Id != distant.Id) await db.DeleteAsync(local);
+            if (string.IsNullOrEmpty(distant.MotDePasseHash) && !string.IsNullOrEmpty(local.MotDePasseHash))
+            {
+                distant.MotDePasseHash = local.MotDePasseHash;
+                distant.Sel = local.Sel;
+            }
+            if ((string.IsNullOrEmpty(distant.MandatPath) || !File.Exists(distant.MandatPath))
+                && !string.IsNullOrEmpty(local.MandatPath) && File.Exists(local.MandatPath))
+                distant.MandatPath = local.MandatPath;
+        }
+
+        await db.InsertOrReplaceAsync(distant);
+        return distant;
     }
 }
 
@@ -175,5 +269,17 @@ public static class FichierService
         {
             return (null, "Impossible de lire le fichier : " + ex.Message);
         }
+    }
+
+    /// <summary>Lit un PDF local et le encode en Base64 pour l'envoi au serveur.</summary>
+    public static async Task<string?> LireBase64Async(string? chemin)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(chemin) || !File.Exists(chemin)) return null;
+            var octets = await File.ReadAllBytesAsync(chemin);
+            return octets.Length == 0 ? null : Convert.ToBase64String(octets);
+        }
+        catch { return null; }
     }
 }

@@ -19,9 +19,10 @@ public class PublicationForm
 
 /// <summary>
 /// Publication contrôlée : seules les institutions accréditées publient, avec des règles anti-fraude
-/// (lien HTTPS officiel, arrêté PDF, dates cohérentes, anti-doublon). La modération back-office est simulée.
+/// (lien HTTPS officiel, arrêté PDF, dates cohérentes, anti-doublon). La modération est assurée par
+/// le backend ; hors ligne, elle est simulée localement.
 /// </summary>
-public class PublicationService(DatabaseService dbs, AlerteService alertes)
+public class PublicationService(DatabaseService dbs, AlerteService alertes, ApiClient api)
 {
 #if DEBUG
     static readonly TimeSpan DelaiModeration = TimeSpan.Zero;          // démo : validation immédiate
@@ -63,6 +64,25 @@ public class PublicationService(DatabaseService dbs, AlerteService alertes)
         var (chemin, erreurFichier) = await FichierService.CopierPdfAsync(f.ArreteSource, "arretes", 8);
         if (chemin == null) return OpResult.Echec(erreurFichier!);
 
+        // 1) Envoi au backend (le serveur valide et modère)
+        var base64 = await FichierService.LireBase64Async(chemin);
+        if (base64 != null)
+        {
+            var distant = await api.PostAsync<OperationApi>("/api/publications", new PublicationApiRequest(
+                u.Id, f.EstBourse, intitule, f.DateCloture, f.DateEpreuves, f.Places, f.FraisFcfa,
+                f.Lien.Trim(), base64, f.Reference, f.Portee, f.Avantages, f.NiveauCible));
+            if (distant != null) return new OpResult(distant.Succes, distant.Erreur);
+        }
+
+        // 2) Repli local hors ligne
+        await InsererLocalAsync(u, f, intitule, chemin);
+        await ValiderEnAttenteLocalAsync();
+        return OpResult.Ok();
+    }
+
+    async Task InsererLocalAsync(Utilisateur u, PublicationForm f, string intitule, string chemin)
+    {
+        var db = await dbs.GetAsync();
         if (f.EstBourse)
         {
             await db.InsertAsync(new Bourse
@@ -93,13 +113,19 @@ public class PublicationService(DatabaseService dbs, AlerteService alertes)
                 new PieceRequise { ConcoursId = concours.Id, Ordre = 4, Libelle = "4 photos d'identité 4×4", Detail = "Fond blanc récent", Icone = "📷" },
             });
         }
-
-        await ValiderEnAttenteAsync();
-        return OpResult.Ok();
     }
 
-    /// <summary>Simule le back-office : valide accréditations et annonces après le délai de modération.</summary>
+    /// <summary>Déclenche la modération back-office (serveur) ; repli local hors ligne.</summary>
     public async Task ValiderEnAttenteAsync()
+    {
+        var distant = await api.PostAsync<ModerationApiResponse>("/api/publications/valider");
+        if (distant != null) return;
+
+        await ValiderEnAttenteLocalAsync();
+    }
+
+    /// <summary>Simule le back-office hors ligne : valide accréditations et annonces après le délai de modération.</summary>
+    async Task ValiderEnAttenteLocalAsync()
     {
         var db = await dbs.GetAsync();
         var limite = DateTime.Now - DelaiModeration;
@@ -125,6 +151,10 @@ public class PublicationService(DatabaseService dbs, AlerteService alertes)
 
     public async Task<List<(string titre, string type, StatutPublication statut, DateTime date)>> MesAnnoncesAsync(int userId)
     {
+        var distant = await api.GetAsync<List<AnnonceApi>>($"/api/utilisateurs/{userId}/annonces");
+        if (distant != null)
+            return distant.Select(a => (a.Titre, a.Type, a.Statut, a.Date)).ToList();
+
         var db = await dbs.GetAsync();
         var l = new List<(string, string, StatutPublication, DateTime)>();
         l.AddRange((await db.Table<Concours>().ToListAsync()).Where(c => c.ProprietaireId == userId).Select(c => (c.Intitule, "Concours", c.Statut, c.DateSoumission)));

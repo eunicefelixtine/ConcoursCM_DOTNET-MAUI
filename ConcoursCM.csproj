@@ -19,6 +19,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Le backend ASP.NET Core vit dans ce dépôt mais ne fait pas partie de l'app mobile. -->
+    <Compile Remove="backend\**\*.cs" />
+    <None Remove="backend\**\*" />
+    <EmbeddedResource Remove="backend\**\*" />
+    <MauiAsset Remove="backend\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#1E3A8A" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#1E3A8A" BaseSize="128,128" />
   </ItemGroup>

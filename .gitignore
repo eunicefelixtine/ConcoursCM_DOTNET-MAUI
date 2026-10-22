@@ -8,3 +8,7 @@ obj/
 *.apk
 *.aab
 .DS_Store
+
+# Backend ConcoursCM.Api (données locales)
+backend/**/concourscm.db*
+backend/**/storage/

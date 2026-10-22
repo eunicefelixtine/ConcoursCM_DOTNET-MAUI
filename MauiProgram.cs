@@ -23,11 +23,12 @@ public static class MauiProgram
 
         // ---- Services (singletons : état partagé & une seule connexion SQLite)
         var s = builder.Services;
+        s.AddSingleton<ApiClient>();
         s.AddSingleton<DatabaseService>();
         s.AddSingleton<SettingsService>();
         s.AddSingleton<NavigationService>();
         s.AddSingleton<SearchContext>();
-        s.AddSingleton<ISmsGateway, PlaceholderSmsGateway>();
+        s.AddSingleton<ISmsGateway, ApiSmsGateway>();
         s.AddSingleton<AuthService>();
         s.AddSingleton<ConcoursService>();
         s.AddSingleton<ChecklistService>();
